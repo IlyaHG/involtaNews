@@ -1,0 +1,57 @@
+:root {
+  // Размеры
+
+  --font-size-m: 16px;
+  --font-line-m: 24px;
+  --font-m: calc(var(--font-size-m) / var(--font-line-m)) var(--font-family-main);
+  --font-size-l: 24px;
+  --font-line-l: 32px;
+  --font-l: var(--font-size-l) / var(--font-line-l) var(--font-family-main);
+  --font-size-xl: 32px;
+  --font-line-xl: 40px;
+  --font-xl: var(--font-size-xl) / var(--font-line-xl) var(--font-family-main);
+
+  // Размеры
+  --navbar-height: 50px;
+  --sidebar-width: 300px;
+  --sidebar-width-collapsed: 80px;
+
+  // z - Индексы
+  --modal-z-index: 10;
+
+  // Цвета
+  --overlay-color: rgba(0 0 0 / 60%);
+  --red-light: #ff00;
+  --red-dark: #ce0505;
+
+  --primary-color: #0232c2;
+  --secondary-color: #0449e0;
+  --inactive-primary-color: #C4C4C4
+
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+input,
+button,
+textarea,
+select {
+    margin: 0;
+    font: inherit;
+}
+
+
+body {
+  min-height: 100vh;
+  color: var(--primary-color);
+  background: var(--bg-color);
+  transition:
+    color 0.5s,
+    background-color 0.5s;
+  line-height: 1.6;
+
+}
