@@ -7,7 +7,6 @@
     >
       <span class="view-toggle__icon">
         <slot name="single-label">
-          <!-- Fallback если слот не передан -->
           <span>1 колонка</span>
         </slot>
       </span>
@@ -19,7 +18,6 @@
     >
       <span class="view-toggle__icon">
         <slot name="double-label">
-          <!-- Fallback если слот не передан -->
           <span>2 колонки</span>
         </slot>
       </span>

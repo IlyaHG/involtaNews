@@ -1,9 +1,9 @@
 // utils/normalizeRssItem.ts
 
-import type { NewsItem } from '~/types/news'
+import type { NewsItemType } from '~/types/news'
 import type { RawRssItem } from '~/types/rssItem'
 
-export function normalizeRssItem(item: RawRssItem): NewsItem {
+export function normalizeRssItem(item: RawRssItem): NewsItemType {
   const enclosure = item.enclosure
     ? [{
         url: item.enclosure.url,

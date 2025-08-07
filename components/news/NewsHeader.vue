@@ -1,7 +1,19 @@
 <script setup lang="ts">
 import RefreshIcon from '~/static/refresh.svg'
-</script>
+import NewsHeaderSearch from './NewsHeaderSearch.vue'
 
+const emit = defineEmits(['refresh', 'search'])
+
+const props = defineProps<{
+  query: string
+}>()
+
+const query = ref(props.query)
+
+watch(query, (val) => {
+  emit('search', val)
+})
+</script>
 <template>
   <div class="news__header">
     <h1 class="text-2xl font-bold mb-4 news__title">Список новостей</h1>
@@ -11,10 +23,11 @@ import RefreshIcon from '~/static/refresh.svg'
     </button>
 
     <div class="news__header--search">
-      <NewsHeaderSearch />
+      <NewsHeaderSearch v-model="query" />
     </div>
   </div>
 </template>
+
 
 
 

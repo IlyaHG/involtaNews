@@ -1,5 +1,5 @@
 // types/news.ts
-export interface NewsItem {
+export interface NewsItemType {
   title: string
   description: string
   link: string

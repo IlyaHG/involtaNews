@@ -1,23 +1,20 @@
+<script setup lang="ts">
+import SearchIcon from '~/static/search.svg'
+
+const modelValue = defineModel<string>({ default: '' })
+</script>
+
 <template>
   <div class="search-wrapper">
     <input
-      v-model="query"
+      v-model="modelValue"
       type="text"
       class="search-input"
-      @input="$emit('search', query)"
-    >
+    />
     <SearchIcon class="search-icon" />
   </div>
 </template>
 
-<script setup lang="ts">
-import SearchIcon from '~/static/search.svg' 
-
-const query = ref('')
-defineEmits<{
-  (e: 'search', value: string): void
-}>()
-</script>
 
 <style scoped>
 .search-wrapper {

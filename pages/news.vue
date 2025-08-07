@@ -1,65 +1,83 @@
 <template>
-<div class="p-4 news">
-    <NewsHeader @refresh="refreshNews" />
-    
+  <div class="p-4 news">
+    <NewsHeader :query="searchQuery" @refresh="refreshNews" @search="handleSearch" />
+
     <div v-if="isLoading" class="text-center py-4">
-		<div class="animate-spin w-6 h-6 border-2 border-blue-500 border-t-transparent rounded-full mx-auto"/>
-		<p class="mt-2 text-gray-600">Загружаем страницу {{ currentPage }}...</p>
+      <div class="animate-spin w-6 h-6 border-2 border-blue-500 border-t-transparent rounded-full mx-auto" />
+      <p class="mt-2 text-gray-600">Загружаем страницу {{ currentPage }}...</p>
     </div>
-    
+
 	<NewsList 
-		:items="newsData?.items ?? []" 
-		:page="currentPage" 
-		:per-page="perPage"
-		:max-pages="newsData?.maxPages || 1"
-		@update:page="loadPage"
+	  :items="filteredItems" 
+	  :page="currentPage" 
+	  :per-page="perPage"
+	  :max-pages="newsData?.maxPages || 1"
+	  :is-loading="isLoading"
+	  @update:page="loadPage"
+	  @load:all="loadPage(1)"
+	  @load:mos="loadFromMos"
+	  @load:lenta="loadFromLenta"
 	/>
 
-    
+
     <div v-if="newsData?.maxPages && newsData.maxPages > 1" class="mt-6 flex justify-center gap-2">
-		<button 
-        	:disabled="currentPage <= 1 || isLoading"
-        	class="px-4 py-2 bg-blue-500 text-white rounded disabled:bg-gray-300"
-        	@click="loadPage(currentPage - 1)"
-		>
-        ← Предыдущая
-		</button>
-
-		<div class="flex gap-1">
+      <div class="flex gap-1">
         <button 
-			v-for="pageNum in Math.min(newsData.maxPages, 5)" 
-			:key="pageNum"
-			:disabled="isLoading"
-			:class="pageNum === currentPage ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-700'"
-			class="px-3 py-2 rounded disabled:opacity-50"
-			@click="loadPage(pageNum)"
+          v-for="pageNum in Math.min(newsData.maxPages, 5)" 
+          :key="pageNum"
+          :disabled="isLoading"
+          :class="pageNum === currentPage ? 'text-blue' : 'text-black'"
+          class="px-3 py-2"
+          @click="loadPage(pageNum)"
         >
-			{{ pageNum }}
+          {{ pageNum }}
         </button>
-		</div>
-
-		<button 
-        	:disabled="currentPage >= (newsData?.maxPages || 1) || isLoading"
-        	class="px-4 py-2 bg-blue-500 text-white rounded disabled:bg-gray-300"
-        	@click="loadPage(currentPage + 1)"
-		>
-        Следующая →
-		</button>
+      </div>
     </div>
-</div>
+  </div>
 </template>
 
+
 <script setup lang="ts">
-import type { NewsItem } from '~/types/news'
+import type { NewsItemType } from '~/types/news'
 import NewsHeader from '~/components/news/NewsHeader.vue'
 import NewsList from '~/components/news/NewsList.vue'
+import { useRoute, useRouter } from 'vue-router'
+
+const route = useRoute()
+const router = useRouter()
+
+const searchQuery = ref(route.query.query?.toString() || '')
+
+const filteredItems = computed(() => {
+  if (!newsData.value) return []
+  if (!searchQuery.value.trim()) return newsData.value.items
+
+  const q = searchQuery.value.trim().toLowerCase()
+  return newsData.value.items.filter(item =>
+    item.title.toLowerCase().includes(q) ||
+    item.description.toLowerCase().includes(q)
+  )
+})
+
+function handleSearch(query: string) {
+  searchQuery.value = query
+
+  router.replace({
+    query: {
+      ...route.query,
+      query: query || undefined,
+    }
+  })
+}
+
 
 const currentPage = ref(1)
 const perPage = 4
 const isLoading = ref(false)
 
 const newsData = ref<{
-  items: NewsItem[]
+  items: NewsItemType[]
   page: number
   perPage: number
   totalLenta: number
@@ -69,37 +87,64 @@ const newsData = ref<{
 
 async function loadPage(page: number) {
   if (isLoading.value) return
-  
-  console.log(`🔄 Загружаем страницу ${page}`)
   isLoading.value = true
-  
+
   try {
     const response = await $fetch('/api/allnews', {
-      query: {
-        page,
-        perPage
-      }
+      query: { page, perPage }
     })
-    
-    console.log(`✅ Загружена страница ${page}:`, response)
+
     newsData.value = response
     currentPage.value = page
-    
-  } catch (error) {
-    console.error(`❌ Ошибка загрузки страницы ${page}:`, error)
+  }  finally {
+    isLoading.value = false
+  }
+}
+
+async function refreshNews() {
+  await loadPage(currentPage.value)
+}
+
+async function loadFromMos() {
+  if (isLoading.value) return
+  isLoading.value = true
+
+  try {
+    const response = await $fetch<NewsItemType[]>('/api/news')
+    newsData.value = {
+      items: response,
+      page: 1,
+      perPage,
+      totalLenta: 0,
+      totalMos: response.length,
+      maxPages: Math.ceil(response.length / perPage)
+    }
+    currentPage.value = 1
   } finally {
     isLoading.value = false
   }
 }
 
-// Функция обновления
-async function refreshNews() {
-  console.log('🔄 Refresh вызван, обновляем новости...')
-  await loadPage(currentPage.value)
-  console.log('✅ Refresh выполнен')
+async function loadFromLenta() {
+  if (isLoading.value) return
+  isLoading.value = true
+
+  try {
+    const response = await $fetch<NewsItemType[]>('/api/lenta')
+    newsData.value = {
+      items: response,
+      page: 1,
+      perPage,
+      totalLenta: response.length,
+      totalMos: 0,
+      maxPages: Math.ceil(response.length / perPage)
+    }
+    currentPage.value = 1 
+  } finally {
+    isLoading.value = false
+  }
 }
 
-// Загружаем первую страницу при инициализации
 onMounted(() => {
   loadPage(1)
 })
