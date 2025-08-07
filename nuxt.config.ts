@@ -4,5 +4,6 @@ export default defineNuxtConfig({
 
   css: ['~/assets/styles/main.scss'],
 
-  modules: ['@nuxtjs/tailwindcss', '@nuxt/eslint'],
+  modules: ['@nuxtjs/tailwindcss', '@nuxt/eslint', 'nuxt-svgo',],
+  
 })
