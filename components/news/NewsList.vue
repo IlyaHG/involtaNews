@@ -11,8 +11,6 @@ const emit = defineEmits<{
   (e: 'load:all' | 'load:mos' | 'load:lenta' | 'update:page'): void
 }>()
 
-
-
 defineProps<{
 	items: NewsItemType[]
   isLoading: boolean
@@ -31,14 +29,11 @@ const viewMode = computed({
   set: (val) => settingsStore.setViewMode(val),
 })
 
-
 </script>
 
 <template>
   <div class="news__content">
-
-
-<div class="news__content--sub-content flex justify-between items-center mb-4">
+	<div class="news__content--sub-content flex justify-between items-center mb-4">
   <div class="flex gap-2">
 	<button
 	  class="px-4 py-2 text-black disabled:opacity-50"

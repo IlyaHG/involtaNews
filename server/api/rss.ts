@@ -8,10 +8,10 @@ interface RSSSource {
   name: string
 }
 
-const rssSources: RSSSource[] = [
-  { url: 'https://lenta.ru/rss', name: 'lenta' },
-  { url: 'https://www.mos.ru/rss', name: 'mos' },
-]
+const rssSources: Record<string, RSSSource> = {
+  lenta: { url: 'https://lenta.ru/rss', name: 'lenta' },
+  mos: { url: 'https://www.mos.ru/rss', name: 'mos' },
+}
 
 async function fetchRSSFeed({ url, name }: RSSSource): Promise<NewsItemType[]> {
   try {
@@ -46,44 +46,40 @@ export default defineEventHandler(async (event): Promise<NewsResponseDTO> => {
   const query = getQuery(event)
   const page = Number(query.page) || 1
   const perPage = Number(query.perPage) || 4
-  const itemsPerSource = Math.floor(perPage / 2)
+  const source = query.source?.toString()
 
-  try {
-    const newsBySource = await Promise.all(rssSources.map(fetchRSSFeed))
-    const combinedItems: NewsItemType[] = []
-    const sourceMetadata: NewsResponseDTO['sources'] = {}
-
-    // Initialize source metadata
-    rssSources.forEach((source, index) => {
-      sourceMetadata[source.name] = {
-        name: source.name,
-        totalItems: newsBySource[index].length,
-      }
-    })
-
-    // Interleave items from all sources
-    const startIndex = (page - 1) * itemsPerSource
-    for (let i = 0; i < itemsPerSource; i++) {
-      newsBySource.forEach(sourceItems => {
-        const itemIndex = startIndex + i
-        if (sourceItems[itemIndex]) {
-          combinedItems.push(sourceItems[itemIndex])
-        }
-      })
-    }
-
-    const totalItems = Math.max(...newsBySource.map(items => items.length))
-    const maxPages = Math.ceil(totalItems / itemsPerSource)
-
+  if (!source || !rssSources[source]) {
     return {
-      items: combinedItems,
+      items: [],
       pagination: {
         page,
         perPage,
-        totalItems,
-        maxPages,
+        totalItems: 0,
+        maxPages: 0,
       },
-      sources: sourceMetadata,
+      error: 'Invalid or missing source parameter',
+    }
+  }
+
+  try {
+    const items = await fetchRSSFeed(rssSources[source])
+    const startIndex = (page - 1) * perPage
+    const paginatedItems = items.slice(startIndex, startIndex + perPage)
+
+    return {
+      items: paginatedItems,
+      pagination: {
+        page,
+        perPage,
+        totalItems: items.length,
+        maxPages: Math.ceil(items.length / perPage),
+      },
+      sources: {
+        [source]: {
+          name: source,
+          totalItems: items.length,
+        },
+      },
     }
   } catch (error) {
     return {

@@ -1,10 +1,7 @@
 <template>
   <li 
     class="news__item border p-3 rounded flex flex-col transition-all duration-300"
-    :class="{
-      'double': viewMode === 'double',
-      'single': viewMode === 'single'
-    }"
+    :class="viewMode"
   >
     <div class="flex flex-1 flex-row items-center gap-[30px]">
       <div 
@@ -37,41 +34,18 @@
 </template>
 
 <script setup lang="ts">
-import type { NewsItemType } from '~/types/news'
+import type { NewsItemType, NewsViewMode } from '~/types/news'
 import { useNewsSettingsStore } from '~/store/newsSettings'
+import { useNewsUtils } from '~/composables/useNewsUtils'
 
 const store = useNewsSettingsStore()
-const viewMode = computed(() => store.viewMode)
+const viewMode = computed(() => store.viewMode as NewsViewMode)
 
 const { item } = defineProps<{
   item: NewsItemType
 }>()
 
-const formatDate = (dateString: string) => {
-  const date = new Date(dateString);
-  if (isNaN(date.getTime())) return dateString;
-
-  const day = String(date.getDate()).padStart(2, '0');
-  const month = String(date.getMonth() + 1).padStart(2, '0');
-  const year = date.getFullYear();
-
-  return `${day}.${month}.${year}`;
-};
-
-const imageUrl = computed(() => {
-  if (!item.enclosure) return undefined;
-  if (Array.isArray(item.enclosure)) {
-    return item.enclosure[0]?.url;
-  }
-  return item.enclosure.url;
-});
-
-const hasImage = computed(() => !!imageUrl.value);
-const imageError = ref(false);
-
-const handleImageError = () => {
-  imageError.value = true;
-};
+const { formatDate, imageUrl, hasImage, imageError, handleImageError } = useNewsUtils(item)
 </script>
 
 <style scoped>
@@ -82,14 +56,26 @@ const handleImageError = () => {
   margin: 10px 0;
 }
 
+.news__item.single {
+  width: 100%;
+  height: 256px;
+}
+
 .news__item.double {
   width: 100%;
   height: auto;
 }
 
-.news__item.single {
+.news__item.compact {
   width: 100%;
-  height: 256px;
+  min-height: 150px;
+  padding: 1.5rem;
+}
+
+.news__item.grid {
+  width: 100%;
+  min-height: 300px;
+  padding: 1rem;
 }
 
 @media (max-width: 768px) {
