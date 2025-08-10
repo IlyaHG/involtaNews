@@ -7,18 +7,17 @@
       <p class="mt-2 text-gray-600">Загружаем страницу {{ currentPage }}...</p>
     </div>
 
-	<NewsList 
-	  :items="filteredItems" 
-	  :page="currentPage" 
-	  :per-page="perPage"
-	  :max-pages="newsData?.maxPages || 1"
-	  :is-loading="isLoading"
-	  @update:page="loadPage"
-	  @load:all="loadPage(1)"
-	  @load:mos="loadFromMos"
-	  @load:lenta="loadFromLenta"
-	/>
-
+    <NewsList 
+      :items="filteredItems" 
+      :page="currentPage" 
+      :per-page="perPage"
+      :max-pages="newsData?.maxPages || 1"
+      :is-loading="isLoading"
+      @update:page="loadPage"
+      @load:all="loadPage(1)"
+      @load:mos="loadFromMos"
+      @load:lenta="loadFromLenta"
+    />
 
     <div v-if="newsData?.maxPages && newsData.maxPages > 1" class="mt-6 flex justify-center gap-2">
       <div class="flex gap-1">
@@ -37,7 +36,6 @@
   </div>
 </template>
 
-
 <script setup lang="ts">
 import type { NewsItemType } from '~/types/news'
 import NewsHeader from '~/components/news/NewsHeader.vue'
@@ -46,19 +44,12 @@ import { useRoute, useRouter } from 'vue-router'
 
 const route = useRoute()
 const router = useRouter()
+const { createFilteredComputed } = useNewsFilter()
 
 const searchQuery = ref(route.query.query?.toString() || '')
 
-const filteredItems = computed(() => {
-  if (!newsData.value) return []
-  if (!searchQuery.value.trim()) return newsData.value.items
-
-  const q = searchQuery.value.trim().toLowerCase()
-  return newsData.value.items.filter(item =>
-    item.title.toLowerCase().includes(q) ||
-    item.description.toLowerCase().includes(q)
-  )
-})
+const newsItems = computed(() => newsData.value?.items || [])
+const filteredItems = createFilteredComputed(newsItems, searchQuery)
 
 function handleSearch(query: string) {
   searchQuery.value = query
@@ -70,7 +61,6 @@ function handleSearch(query: string) {
     }
   })
 }
-
 
 const currentPage = ref(1)
 const perPage = 4
@@ -96,7 +86,7 @@ async function loadPage(page: number) {
 
     newsData.value = response
     currentPage.value = page
-  }  finally {
+  } finally {
     isLoading.value = false
   }
 }

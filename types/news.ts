@@ -1,4 +1,3 @@
-// types/news.ts
 export interface NewsItemType {
   title: string
   description: string
