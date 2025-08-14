@@ -7,12 +7,17 @@ export type NewsEventMap = {
   'update:page': number
 }
 
+type EmitFn = <K extends keyof NewsEventMap>(
+  event: K,
+  payload: NewsEventMap[K]
+) => void
+
 interface UseNewsEventsOptions {
-  emit: (event: 'load:all' | 'load:mos' | 'load:lenta' | 'update:page') => void
+  emit: EmitFn
 }
 
 export const useNewsEvents = ({ emit }: UseNewsEventsOptions) => {
-  const eventMap: Record<NewsSource, keyof NewsEventMap> = {
+  const eventMap: Record<NewsSource, 'load:all' | 'load:mos' | 'load:lenta'> = {
     all: 'load:all',
     mos: 'load:mos',
     lenta: 'load:lenta'
@@ -20,7 +25,7 @@ export const useNewsEvents = ({ emit }: UseNewsEventsOptions) => {
 
   const handleSourceChange = (source: NewsSource) => {
     const eventName = eventMap[source]
-    emit(eventName)
+    emit(eventName, undefined as NewsEventMap[typeof eventName])
   }
 
   return {

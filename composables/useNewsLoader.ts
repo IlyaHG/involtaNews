@@ -14,12 +14,14 @@ export function useNewsLoader(perPage = 4) {
     () => $fetch('/api/allnews', { query: { page: currentPage.value, perPage } }),
     {
       watch: [() => route.query.page, () => route.query.query],
-      server: true,
+      server: true, 
     }
   )
 
   function updateQuery(params: Record<string, string | undefined>) {
-    router.replace({ query: { ...route.query, ...params } })
+    if (import.meta.client) {
+      router.replace({ query: { ...route.query, ...params } })
+    }
   }
 
   async function loadPage(page: number) {
