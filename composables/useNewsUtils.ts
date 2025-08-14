@@ -14,11 +14,10 @@ export function useNewsUtils(item: NewsItemType) {
   }
 
   const imageUrl = computed(() => {
-    if (!item.enclosure) return undefined
-    if (Array.isArray(item.enclosure)) {
-      return item.enclosure[0]?.url
-    }
-    return item.enclosure.url
+	  if (!item.enclosure || item.enclosure.length === 0) {
+	    return undefined
+	  }
+	  return item.enclosure[0]?.url
   })
 
   const hasImage = computed(() => !!imageUrl.value)

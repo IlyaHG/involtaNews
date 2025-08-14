@@ -1,4 +1,3 @@
-// types/news.ts
 export interface NewsItemType {
   title: string
   description: string
@@ -32,3 +31,5 @@ export interface NewsResponseDTO {
 }
 
 export type NewsViewMode = 'single' | 'double'
+
+export type NewsSource = 'all' | 'mos' | 'lenta'

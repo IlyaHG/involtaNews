@@ -1,36 +1,45 @@
 <template>
   <div class="view-toggle">
     <button
-      :class="{ 'active': modelValue === 'single' }"
-      class="view-toggle__button view-toggle__button--left"
-      @click="emit('update:modelValue', 'single')"
+      v-for="(option, index) in options"
+      :key="option.value"
+      :class="{ 
+        'active': modelValue === option.value,
+        'view-toggle__button--left': index === 0,
+        'view-toggle__button--right': index === options.length - 1,
+        'view-toggle__button--middle': index > 0 && index < options.length - 1
+      }"
+      :disabled="disabled"
+      class="view-toggle__button"
+      @click="emit('update:modelValue', option.value)"
     >
       <span class="view-toggle__icon">
-        <slot name="single-label">
-          <span>1 колонка</span>
-        </slot>
-      </span>
-    </button>
-    <button
-      :class="{ 'active': modelValue === 'double' }"
-      class="view-toggle__button view-toggle__button--right"
-      @click="emit('update:modelValue', 'double')"
-    >
-      <span class="view-toggle__icon">
-        <slot name="double-label">
-          <span>2 колонки</span>
+        <slot :name="`${option.value}-label`" :option="option">
+          <span>{{ option.label }}</span>
         </slot>
       </span>
     </button>
   </div>
 </template>
 
-<script setup lang="ts">
-defineProps<{
-  modelValue: 'single' | 'double'
-}>()
+<script setup lang="ts" generic="T extends string">
+interface ToggleOption<T> {
+  value: T
+  label: string
+  icon?: string
+}
 
-const emit = defineEmits(['update:modelValue'])
+interface Props<T> {
+  modelValue: T
+  options: readonly ToggleOption<T>[] | ToggleOption<T>[] // принимаем и readonly и обычный массив
+  disabled?: boolean
+}
+
+defineProps<Props<T>>()
+
+const emit = defineEmits<{
+  'update:modelValue': [value: T]
+}>()
 </script>
 
 <style scoped>

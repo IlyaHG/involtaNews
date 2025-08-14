@@ -53,7 +53,6 @@ export default defineEventHandler(async (event): Promise<NewsResponseDTO> => {
     const combinedItems: NewsItemType[] = []
     const sourceMetadata: NewsResponseDTO['sources'] = {}
 
-    // Initialize source metadata
     rssSources.forEach((source, index) => {
       sourceMetadata[source.name] = {
         name: source.name,
@@ -61,7 +60,6 @@ export default defineEventHandler(async (event): Promise<NewsResponseDTO> => {
       }
     })
 
-    // Interleave items from all sources
     const startIndex = (page - 1) * itemsPerSource
     for (let i = 0; i < itemsPerSource; i++) {
       newsBySource.forEach(sourceItems => {
